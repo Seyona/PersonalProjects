@@ -8,7 +8,7 @@
         The program will also create a folder for each subreddit that it is sent to
 
     Current Issues:
-        The user cannot select a file path the default is a folder on the desktop
+        The user cannot select a file path the default is the location of the program
         The user cannot run this on non windows systems it will not recognize the file path
             UPDATE : This should now run on non windows systems, but is not tested yet
         The Program cannot differentiate between imgur urls and regular reddit urls
@@ -24,18 +24,13 @@ import urllib.request
     Function reads Json file and downloads all unique imgur URLS
     Function will check log file so it only downloads newFiles
 '''
-def downloadPhoto(file_name):
+def downloadPhoto(file_name, sub):
     data_file = open(file_name , "r")
     data = simplejson.load(data_file)
 
-
-    sub = file_name[len(file_name)-7:len(file_name) - 5] #removes .txt to leave sub name
-   # valid_urls = ["http://imgur.com/", "http://i.imgur.com/"]
     num_photos = 0
 
-    print (sub)
-
-    for index in range(1,26): ''' 25 entries on front page '''
+    for index in range(1,26):
         photo_name = data['data']['children'][index]['data']['title']
         imgUrl = data["data"]["children"][index]["data"]["url"]
         if not isInDirectory(sub, imgUrl):
@@ -43,7 +38,8 @@ def downloadPhoto(file_name):
             ''' download picture'''
             urllib.request.urlretrieve(imgUrl, photo_name)
             num_photos += 1
-        print("\n" + num_photos + " new photos have been added")
+
+    print("\n" + num_photos + " new photos have been added")
 
 '''
     Function will right new URL's to log file
@@ -125,6 +121,7 @@ def createPhotoLogFile(sub_name):
 
     else:
         print("Run createPictureDirectory() first!")
+    print("done")
 
 
 '''
@@ -147,6 +144,8 @@ def urlToFile(sub_reddit):
         * sub_name_Pictures
     If it doesn't find one, the function will return false
 '''
+
+
 def checkForDirectorys(sub_name):
     rf_exists = os.path.exists(defaultPath() + "/Reddit_Pictures")
     sr_exists = os.path.exists(defaultPath() + "/Reddit_Pictures/" + sub_name + "_Pictures")
@@ -154,9 +153,9 @@ def checkForDirectorys(sub_name):
     return rf_exists and sr_exists
 
 
-
 def main():
     sub = "aww"
+   
     if not checkForDirectorys(sub):
         if not os.path.exists(defaultPath()+"/Reddit_Pictures"):
             createPictureDirectory()
@@ -169,4 +168,4 @@ def main():
 
     urlToFile(sub)
     path_to_json = defaultPath() + "/Reddit_Pictures/" + sub + "_Pictures/" + sub + ".json"
-    downloadPhoto(path_to_json)
+    downloadPhoto(path_to_json, sub)
